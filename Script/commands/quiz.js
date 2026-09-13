@@ -1,162 +1,125 @@
 const axios = require("axios");
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+const CONFIG_URL = "https://raw.githubusercontent.com/shahadat-sahu/SAHU-API/refs/heads/main/SAHU-API.json";
+
 module.exports.config = {
   name: "quiz",
-  version: "2.3.3",
+  version: "1.0.0",
   hasPermssion: 0,
-  credits: "RUBISH API + Bangla Version by rX",
-  description: "বাংলা কুইজ গেম (ফ্রি + কয়েন সিস্টেম)",
-  usePrefix: false,
+  credits: "SHAHADAT SAHU",
+  description: "Quiz with 30s timer",
   commandCategory: "Game",
-  usages: "quiz [h]",
-  cooldowns: 5,
-  dependencies: { "axios": "" }
+  usages: "quiz",
+  cooldowns: 0,
+  usePrefix: true
 };
 
-const timeoutDuration = 20 * 1000;
+const TIME_LIMIT = 30000;
+let QUIZ_API = null;
 
-module.exports.run = async function ({ api, event, args }) {
-  const { threadID, messageID } = event;
-
-  // Help / Guide
-  if (args[0]?.toLowerCase() === "h") {
-    return api.sendMessage(
-      `🧠 কুইজ গাইড\n\n` +
-      `➤ কমান্ড: quiz\n` +
-      `➤ সঠিক উত্তর: +৫০০ কয়েন 💰\n` +
-      `➤ ভুল উত্তর: কোনো কয়েন কাটা যাবে না ❌\n` +
-      `➤ ০ কয়েন থাকলেও খেলতে পারবে 🎉\n` +
-      `➤ উত্তর দেওয়ার সময়: ২০ সেকেন্ড ⏰\n\n` +
-      `⚡ শুভকামনা!`,
-      threadID,
-      messageID
-    );
+async function loadQuizAPI() {
+  try {
+    if (QUIZ_API) return QUIZ_API;
+    const res = await axios.get(CONFIG_URL);
+    QUIZ_API = res.data.quize.replace(/\/$/, "");
+    return QUIZ_API;
+  } catch {
+    return null;
   }
+}
+
+module.exports.run = async function ({ api, event }) {
+  const { threadID, messageID } = event;
+  if (!global.client.handleReply) global.client.handleReply = [];
 
   try {
-    const res = await axios.get(
-      "https://rubish-apihub.onrender.com/rubish/quiz-api?category=Bangla&apikey=rubish69"
-    );
+    const quizAPI = await loadQuizAPI();
+    if (!quizAPI) return api.sendMessage("Quiz API error call boss SAHU✔️", threadID, messageID);
+
+    const res = await axios.get(quizAPI + "/quiz");
     const data = res.data;
 
-    if (!data.question || !data.answer) {
-      throw new Error("Quiz data invalid");
+    if (!data || !data.question) {
+      return api.sendMessage("❌ No quiz available", threadID, messageID);
     }
 
-    const quizText =
-`╭──✦ 🧠 বাংলা কুইজ
-├ প্রশ্ন: ${data.question}
-│
-├ 𝗔) ${data.A}
-├ 𝗕) ${data.B}
-├ 𝗖) ${data.C}
-├ 𝗗) ${data.D}
-╰──────────────────✦
-✍️ রিপ্লাই দাও: A / B / C / D
-⏰ সময়: ২০ সেকেন্ড`;
+    const msg =
+      `🎮 𝗚𝗮𝗺𝗲 𝗤𝘂𝗶𝘇 𝗦𝘁𝗮𝗿𝘁𝗲𝗱\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `🔻 ${data.question}\n\n` +
+      `A › ${data.A}\n` +
+      `B › ${data.B}\n` +
+      `C › ${data.C}\n` +
+      `D › ${data.D}\n\n` +
+      `⏰ 30s • Reply: A/B/C/D`;
 
-    return api.sendMessage(quizText, threadID, async (err, info) => {
-      if (err) return console.error(err);
+    api.sendMessage(msg, threadID, (err, info) => {
+      if (err) return;
 
       const timeout = setTimeout(async () => {
-        const index = global.client.handleReply.findIndex(
-          e => e.messageID === info.messageID
-        );
+        const i = global.client.handleReply.findIndex(e => e.messageID === info.messageID);
+        if (i === -1) return;
 
-        if (index !== -1) {
-          await api.unsendMessage(info.messageID);
-          api.sendMessage(
-            `⏰ সময় শেষ!\n✅ সঠিক উত্তর ছিল: ${data.answer}`,
-            threadID
-          );
-          global.client.handleReply.splice(index, 1);
+        const hr = global.client.handleReply[i];
+
+        if (!hr.answered) {
+          const result = await axios.post(quizAPI + "/quiz/answer", {
+            sessionID: hr.sessionID,
+            answer: ""
+          });
+
+          api.sendMessage(`⏰ Time Up!\nCorrect Answer: ${result.data.answer}`, threadID);
         }
-      }, timeoutDuration);
+
+        await api.unsendMessage(info.messageID);
+        global.client.handleReply.splice(i, 1);
+      }, TIME_LIMIT);
 
       global.client.handleReply.push({
         name: module.exports.config.name,
         messageID: info.messageID,
-        author: event.senderID,
-        answer: data.answer,
-        timeout
+        sessionID: data.sessionID,
+        timeout,
+        answered: false
       });
-    });
+    }, messageID);
 
-  } catch (e) {
-    console.error(e);
-    return api.sendMessage(
-      "❌ কুইজ লোড করা যায়নি, পরে আবার চেষ্টা করো!",
-      threadID,
-      messageID
-    );
+  } catch {
+    api.sendMessage("Quiz API error call boss SAHU✔", threadID, messageID);
   }
 };
 
-module.exports.handleReply = async function ({
-  api,
-  event,
-  handleReply,
-  Currencies,
-  Users
-}) {
-  const { senderID, threadID, messageID, body } = event;
+module.exports.handleReply = async function ({ api, event, handleReply }) {
+  const { threadID, body, messageID } = event;
 
-  if (senderID !== handleReply.author) return;
+  const ans = body.trim().toUpperCase();
+  if (!["A", "B", "C", "D"].includes(ans)) return;
 
-  const userAnswer = body.trim().toUpperCase();
-
-  if (!["A", "B", "C", "D"].includes(userAnswer)) {
-    return api.sendMessage(
-      "⚠️ দয়া করে শুধু A / B / C / D লিখে উত্তর দাও",
-      threadID,
-      messageID
-    );
-  }
-
+  handleReply.answered = true;
   clearTimeout(handleReply.timeout);
 
   try {
-    const name = await Users.getNameUser(senderID);
-    const mention = [{ id: senderID, tag: name }];
+    const quizAPI = await loadQuizAPI();
 
-    if (userAnswer === handleReply.answer) {
-      await api.unsendMessage(handleReply.messageID);
-      await Currencies.increaseMoney(senderID, 500);
+    const res = await axios.post(quizAPI + "/quiz/answer", {
+      sessionID: handleReply.sessionID,
+      answer: ans
+    });
 
-      const money = (await Currencies.getData(senderID)).money;
-
-      return api.sendMessage(
-        {
-          body:
-            `🎉 অভিনন্দন ${name}!\n` +
-            `✅ তোমার উত্তর সঠিক\n` +
-            `💰 পেয়েছো: ৫০০ কয়েন\n` +
-            `🏦 মোট ব্যালেন্স: ${money} কয়েন`,
-          mentions: mention
-        },
-        threadID,
-        messageID
-      );
+    if (res.data.correct === true) {
+      api.sendMessage(`✅ Correct! (${res.data.answer})`, threadID, messageID);
     } else {
-      return api.sendMessage(
-        {
-          body:
-            `❌ দুঃখিত ${name}\n` +
-            `তোমার উত্তর ভুল\n` +
-            `✅ সঠিক উত্তর: ${handleReply.answer}\n` +
-            `⚡ কোনো কয়েন কাটা হয়নি`,
-          mentions: mention
-        },
-        threadID,
-        messageID
-      );
+      api.sendMessage(`❌ Wrong!\nCorrect: ${res.data.answer}`, threadID, messageID);
     }
-  } catch (err) {
-    console.error(err);
+
+    await api.unsendMessage(handleReply.messageID);
+
+  } catch {
+    api.sendMessage("❌ Failed to check answer", threadID, messageID);
   }
 
-  const index = global.client.handleReply.findIndex(
-    e => e.messageID === handleReply.messageID
-  );
-  if (index !== -1) global.client.handleReply.splice(index, 1);
+  const i = global.client.handleReply.findIndex(e => e.messageID === handleReply.messageID);
+  if (i !== -1) global.client.handleReply.splice(i, 1);
 };

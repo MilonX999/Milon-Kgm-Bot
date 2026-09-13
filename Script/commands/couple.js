@@ -7,12 +7,56 @@ module.exports.config = {
   version: "1.0.0",
   hasPermssion: 0,
   credits: "SHAHADAT SAHU",
-  description: "Generate a couple banner image using sender and target Facebook UID via Avatar Canvas API",
+  description: "Generate a crush banner image using sender and target Facebook UID via Avatar Canvas API",
   commandCategory: "banner",
   usePrefix: true,
   usages: "[@mention | reply]",
-  cooldowns: 5
+  cooldowns: 5,
+  dependencies: {
+    "axios": "",
+    "fs-extra": "",
+    "path": ""
+  }
 };
+
+const CRUSH2_CAPTIONS = [
+`💛🌻
+তোমার নামটা শুনলেই
+মনটা কেমন জানি হালকা হয়ে যায় 🙂
+এই অনুভূতিটাই হয়তো Crush 🫶`,
+
+`🫶💛
+চুপচাপ তাকিয়ে থাকি,
+কারণ চোখের ভাষায়
+সব বলা যায় না 🌼
+Crush 💛`,
+
+`🌻💛
+ভালোবাসা না হয় পরে,
+এই ভালো লাগাটুকু
+এখনই খুব দামী 🫶`,
+
+`💛🙂
+তুমি জানো না,
+কিন্তু তোমার একটা হাসিই
+কারো পুরো দিন ভালো করে দেয় 🌸`,
+
+`🫶🌼
+তোমাকে পাওয়ার দাবি নেই,
+শুধু মনে মনে
+একটু ভালোবাসি 💛`,
+
+`🌼💛
+এই অনুভূতিটার কোনো নাম হয় না,
+তবুও সবাই একে
+Crush বলেই চেনে 🫶`,
+
+`💛🌸
+একটা মানুষ,
+একটা অনুভূতি,
+আর অজান্তেই
+ভালো লেগে যাওয়া 🙂`
+];
 
 module.exports.run = async function ({ event, api }) {
   const { threadID, messageID, senderID, mentions, messageReply } = event;
@@ -26,7 +70,11 @@ module.exports.run = async function ({ event, api }) {
   }
 
   if (!targetID) {
-    return api.sendMessage("Please reply or mention someone......", threadID, messageID);
+    return api.sendMessage(
+      "Please reply or mention someone......",
+      threadID,
+      messageID
+    );
   }
 
   try {
@@ -39,21 +87,27 @@ module.exports.run = async function ({ event, api }) {
     const res = await axios.post(
       `${AVATAR_CANVAS_API}/api`,
       {
-        cmd: "love3",
+        cmd: "crush2",
         senderID,
         targetID
       },
-      { responseType: "arraybuffer", timeout: 20000 }
+      { responseType: "arraybuffer", timeout: 30000 }
     );
 
-    const imgPath = path.join(__dirname, "cache", `love3_${senderID}_${targetID}.png`);
+    const imgPath = path.join(
+      __dirname,
+      "cache",
+      `crush2_${senderID}_${targetID}.png`
+    );
+
     fs.writeFileSync(imgPath, res.data);
 
-    const successBody = "❤️ SUCCESS MESSAGE HERE ❤️";
+    const caption =
+      CRUSH2_CAPTIONS[Math.floor(Math.random() * CRUSH2_CAPTIONS.length)];
 
     return api.sendMessage(
       {
-        body: successBody,
+        body: caption,
         attachment: fs.createReadStream(imgPath)
       },
       threadID,
@@ -61,7 +115,11 @@ module.exports.run = async function ({ event, api }) {
       messageID
     );
 
-  } catch (e) {
-    return api.sendMessage("API Error Call MR JUWEL", threadID, messageID);
+  } catch {
+    return api.sendMessage(
+      "API Error Call Boss SAHU",
+      threadID,
+      messageID
+    );
   }
 };

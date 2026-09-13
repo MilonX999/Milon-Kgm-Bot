@@ -2,9 +2,9 @@ module.exports.config = {
  name: "wish",
  version: "1.0.0",
  hasPermssion: 0,
- credits: "𝐒𝐡𝐚𝐡𝐚𝐝𝐚𝐭 𝐈𝐬𝐥𝐚𝐦",
+ credits: "SHAHADAT SAHU",
  description: "Happy birthday wish for your friends",
- commandCategory: "M H BD",
+ commandCategory: "Birthday",
  usages: "@tag",
  dependencies: {
  axios: "",

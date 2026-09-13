@@ -2,7 +2,7 @@ module.exports.config = {
   name: "prefix",
   version: "1.0.0", 
   hasPermssion: 0,
-  credits: "Shahadat SAHU",
+  credits: "MD MILON SARKAR",
   description: "Display the bot's prefix and owner info",
   commandCategory: "Information",
   usages: "",
@@ -30,14 +30,14 @@ module.exports.handleEvent = async ({ event, api, Threads }) => {
   let lowerBody = body.toLowerCase();
   if (triggerWords.includes(lowerBody)) {
     return api.sendMessage(
-`🌟━━━━━━━━━━━━━━🌟
-　『 𝐏𝐑𝐄𝐅𝐈𝐗 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐓𝐈𝐎𝐍 』
-🌟━━━━━━━━━━━━━━━🌟
+`🌟━━━━━━━━━━━━━━━━━🌟
+　　　『 𝐏𝐑𝐄𝐅𝐈𝐗 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐓𝐈𝐎𝐍 』
+🌟━━━━━━━━━━━━━━━━━🌟
 『 𝐁𝐎𝐓 𝐈𝐍𝐅𝐎 』
 
 ➤ 𝗕𝗼𝘁 𝗽𝗿𝗲𝗳𝗶𝘅 : [ ${prefix} ]
-➤ 𝗕𝗼𝘁 𝗡𝗮𝗺𝗲   : ⎯꯭𓆩꯭𝆺𝅥😻⃞𝐑⃞𝐈⃞𝐘⃞𝐀⃞༢࿐
-➤ 𝗕𝗼𝘁 𝗔𝗱𝗺𝗶𝗻 : ⎯꯭𓆩꯭𝆺𝅥😻⃞𝐌⃞𝆠፝֟𝐑᭄ღ倫 𝐉⃞𝐔⃞𝐖⃞𝐄⃞𝐋༢࿐
+➤ 𝗕𝗼𝘁 𝗡𝗮𝗺𝗲   : ─꯭─⃝‌‌মিঁলঁনেঁরঁ ফেঁমাঁসঁ বঁটঁ
+➤ 𝗕𝗼𝘁 𝗔𝗱𝗺𝗶𝗻 : MD MILON SARKAR
 
 『 𝐁𝐎𝐗 𝐈𝐍𝐅𝐎 』
 
@@ -47,14 +47,14 @@ module.exports.handleEvent = async ({ event, api, Threads }) => {
 
 『 𝐎𝐖𝐍𝐄𝐑 𝐈𝐍𝐅𝐎 』
 
-➤ 𝗢𝘄𝗻𝗲𝗿 𝗡𝗮𝗺𝗲 : ⎯꯭𓆩꯭𝆺𝅥😻⃞𝐌⃞𝆠፝֟𝐑᭄ღ倫 𝐉⃞𝐔⃞𝐖⃞𝐄⃞𝐋༢࿐
-➤ 𝗙𝗮𝗰𝗲𝗯𝗼𝗼𝗸    : https://www.facebook.com/share/1DKK1FYumD/
-➤ 𝗠𝗲𝘀𝘀𝗲𝗻𝗴𝗲𝗿  : mrjuwel2025
-➤ 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽    : +8801943488192
+➤ 𝗢𝘄𝗻𝗲𝗿 𝗡𝗮𝗺𝗲 : MD MILON SARKAR
+➤ 𝗙𝗮𝗰𝗲𝗯𝗼𝗼𝗸    : https://www.facebook.com/share/1CEgVwabm8/
+➤ 𝗠𝗲𝘀𝘀𝗲𝗻𝗴𝗲𝗿  : m.me/100081225144815
+➤ 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽    : HIDE
 
-🌟━━━━━━━━━━━━━━━🌟
-　𝗧𝗵𝗮𝗻𝗸 𝗬𝗼𝘂 𝗙𝗼𝗿 𝐑⃞𝐈⃞𝐘⃞𝐀⃞༢
-🌟━━━━━━━━━━━━━━━🌟`,
+🌟━━━━━━━━━━━━━━━━━🌟
+　　　　𝗧𝗵𝗮𝗻𝗸 𝗬𝗼𝘂 𝗙𝗼𝗿 𝗨𝘀𝗶𝗻𝗴!
+🌟━━━━━━━━━━━━━━━━━🌟`,
       threadID,
       null
     );

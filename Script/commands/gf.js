@@ -2,7 +2,7 @@ module.exports.config = {
   name: "gf",
   version: "1.0.1",
   hasPermssion: 0,
-  credits: "SHAHADAT SAHU",
+  credits: "SHAHADAT SAHU", //don't change credit✔️
   description: "couple banner",
   commandCategory: "banner",
   usages: "[@mention | reply]",
@@ -68,7 +68,7 @@ module.exports.run = async function ({ event, api }) {
 
   } catch (e) {
     return api.sendMessage(
-      "GF API Error | JUWEL-API unreachable",
+      "GF API Error | SAHU-API unreachable",
       threadID,
       messageID
     );

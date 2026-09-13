@@ -4,7 +4,7 @@ const path = require("path");
 
 module.exports.config = {
   name: "hug",
-  version: "1.0.0",
+  version: "2.0.0",
   hasPermssion: 0,
   credits: "SHAHADAT SAHU",
   description: "Generate hug frame using Avatar Canvas API",

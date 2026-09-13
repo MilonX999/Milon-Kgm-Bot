@@ -1,425 +1,135 @@
 module.exports.config = {
   name: "joinnoti",
   eventType: ["log:subscribe"],
-  version: "7.1.0",
-  credits: "乛 M𝆠፝֟R ཐི༏ཋྀ JU𝆠፝֟W𝆠፝֟ELꜛཐི༏ཋྀ࿐",
-  description: "Ultra Join System + VIP + Daily Report + 10 Frame Auto System",
+  version: "1.0.2",
+  credits: "MD MILON SARKAR",
+  description: "Welcome message with optional image/video",
   dependencies: {
-    "axios": "",
-    "moment-timezone": "",
-    "fs-extra": ""
+    "fs-extra": "",
+    "path": ""
   }
 };
 
-const fs = require("fs-extra");
-const path = require("path");
-const moment = require("moment-timezone");
-const axios = require("axios");
-
-const cooldown = {};
-const VIP_UID = ["61591542717221"];
-
-const filePath = path.join(__dirname, "cache", "dailyJoin.json");
-const frameFile = path.join(__dirname, "cache", "frame.json");
-
-/* ================= FRAME SYSTEM ================= */
-function loadFrame() {
-  if (!fs.existsSync(frameFile)) return {};
-  return JSON.parse(fs.readFileSync(frameFile));
-}
-
-function saveFrame(data) {
-  fs.writeFileSync(frameFile, JSON.stringify(data, null, 2));
-}
-
-/* ================= ENSURE FILE ================= */
-function ensureFile() {
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, JSON.stringify({}, null, 2));
-}
-
-/* ================= LOAD DATA ================= */
-function loadData() {
-  ensureFile();
-  return JSON.parse(fs.readFileSync(filePath));
-}
-
-/* ================= SAVE DATA ================= */
-function saveData(data) {
-  ensureFile();
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
-
-/* ================= GET AVATAR ================= */
-async function getAvatar(uid) {
-  try {
-    const avatar = await axios.get(`https://graph.facebook.com/${uid}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, {
-      responseType: "stream"
-    });
-    return avatar.data;
-  } catch (e) {
-    return null;
+module.exports.onLoad = function () {
+  const { existsSync, mkdirSync } = global.nodemodule["fs-extra"];
+  const { join } = global.nodemodule["path"];
+  const paths = [
+    join(__dirname, "cache", "joinGif"),
+    join(__dirname, "cache", "randomgif")
+  ];
+  for (const path of paths) {
+    if (!existsSync(path)) mkdirSync(path, { recursive: true });
   }
-}
+};
 
-/* ================= MAIN EVENT ================= */
-module.exports.run = async function ({ api, event, Users }) {
-  try {
-    const { threadID, author } = event;
+module.exports.run = async function({ api, event }) {
+  const fs = require("fs");
+  const path = require("path");
+  const { threadID } = event;
+  
+  const botPrefix = global.config.PREFIX || "/";
+  const botName = global.config.BOTNAME || "মিঁলঁনেঁরঁ ফেঁমাঁসঁ বঁটঁ";
 
-    const now = Date.now();
-    const today = moment.tz("Asia/Dhaka").format("DD-MM-YYYY");
+ 
+  if (event.logMessageData.addedParticipants.some(i => i.userFbId == api.getCurrentUserID())) {
+    await api.changeNickname(`[ ${botPrefix} ] • ${botName}`, threadID, api.getCurrentUserID());
 
-    let data = loadData();
-    let frameDB = loadFrame();
-
-    if (!data[threadID]) data[threadID] = { date: today, count: 0 };
-    if (!frameDB[threadID]) frameDB[threadID] = 1;
-
-    if (data[threadID].date !== today) {
-      data[threadID].date = today;
-      data[threadID].count = 0;
-    }
-
-    /* ================= AUTO FRAME ROTATE ================= */
-    if (!global.autoFrameIndex) global.autoFrameIndex = {};
-    if (!global.autoFrameIndex[threadID]) {
-      global.autoFrameIndex[threadID] = 1;
-    } else {
-      global.autoFrameIndex[threadID]++;
-      if (global.autoFrameIndex[threadID] > 10) {
-        global.autoFrameIndex[threadID] = 1;
-      }
-    }
-
-    const frame = global.autoFrameIndex[threadID];
-
-    /* ================= BOT JOIN ================= */
-    if (
-      event.logMessageData.addedParticipants.some(
-        u => u.userFbId == api.getCurrentUserID()
-      )
-    ) {
-      const prefix = global.config.PREFIX || "/";
-      return api.sendMessage(
-`┌───🌸────🌷───┐
-│👑 𝐑𝐈𝐘𝐀 𝐁𝐎𝐓 𝐇𝐄𝐑𝐄 ✨
-└───🎀────🪄───┘
-
-🎀 তোমাদের মধ্যে চলে এসেছি আমি
-🎀 বিনোদন দিবো, কথা বলবো, মজা করবো
-
-💠 𝐏𝐫𝐞𝐟𝐢𝐱 : ${prefix}
-👑 𝐎𝐰𝐧𝐞𝐫 : 乛 M𝆠፝֟R ཐི༏ཋྀ JU𝆠፝֟W𝆠፝֟ELꜛཐི༏ཋྀ࿐
-
-━━━━━━━━━━━━━━━━━━
-
-💖 𝐋𝐄𝐓'𝐒 𝐇𝐀𝐕𝐄 𝐅𝐔𝐍 𝐓𝐎𝐆𝐄𝐓𝐇𝐄𝐑 💖`,
-        threadID
+    api.sendMessage("চ্ঁলে্ঁ এ্ঁসে্ঁছি্ঁ মিঁলঁনেঁরঁ ফেঁমাঁসঁ বঁটঁ এঁখঁনঁ তোঁমাঁদেঁরঁ সাঁথেঁ আঁড্ডাঁ দিঁবঁ..!", threadID, () => {
+      const randomGifPath = path.join(__dirname, "cache", "randomgif");
+      const allFiles = fs.readdirSync(randomGifPath).filter(file =>
+        [".mp4", ".jpg", ".png", ".jpeg", ".gif", ".mp3"].some(ext => file.endsWith(ext))
       );
-    }
 
-    /* ================= COOLDOWN ================= */
-    if (cooldown[threadID] && now - cooldown[threadID] < 30000) return;
-    cooldown[threadID] = now;
+      const selected = allFiles.length > 0 
+        ? fs.createReadStream(path.join(randomGifPath, allFiles[Math.floor(Math.random() * allFiles.length)])) 
+        : null;
 
-    const addedUsers = event.logMessageData.addedParticipants;
+      const messageBody = `╭•┄┅═══❁🌺❁═══┅┄•╮
+     আ্ঁস্ঁসা্ঁলা্ঁমু্ঁ💚আ্ঁলা্ঁই্ঁকু্ঁম্ঁ
+╰•┄┅═══❁🌺❁═══┅┄•╯
 
-    const mentions = addedUsers.map(u => ({
-      tag: u.fullName,
-      id: u.userFbId
-    }));
+𝐓𝐡𝐚𝐧𝐤 𝐲𝐨𝐮 𝐬𝐨 𝐦𝐮𝐜𝐡 𝐟𝐨𝐫 𝐚𝐝𝐝𝐢𝐧𝐠 𝐦𝐞 𝐭𝐨 𝐲𝐨𝐮𝐫 𝐢-𝐠𝐫𝐨𝐮𝐩-🖤🤗
+𝐈 𝐰𝐢𝐥𝐥 𝐚𝐥𝐰𝐚𝐲𝐬 𝐬𝐞𝐫𝐯𝐞 𝐲𝐨𝐮 𝐢𝐧𝐚𝐡𝐚𝐥𝐥𝐚𝐡 🌺❤️
 
-    const names = addedUsers.map(u => u.fullName);
-    const count = addedUsers.length;
+𝐓𝐨 𝐯𝐢𝐞𝐰 𝐚𝐧𝐲 𝐜𝐨𝐦𝐦𝐚𝐧𝐝:
+${botPrefix}Help
+${botPrefix}Info
+${botPrefix}Admin
 
-    const adderName = await Users.getNameUser(author);
+★ যেকোনো অভিযোগ অথবা হেল্প এর জন্য এডমিন MILON কে নক করতে পারেন ★
+➤𝐌𝐞𝐬𝐬𝐞𝐧𝐠𝐞𝐫: https://m.me/100081225144815
 
-    const isVIP = addedUsers.some(u => VIP_UID.includes(u.userFbId));
+❖⋆═══════════════════════⋆❖
+          𝐁𝐨𝐭 𝐎𝐰𝐧𝐞𝐫 ➢ MD MILON SARKAR`;
 
-    /* ================= DAILY COUNT ================= */
-    data[threadID].count += count;
-    saveData(data);
-
-    /* ================= GET AVATAR FOR FIRST USER ================= */
-    const firstUser = addedUsers[0];
-    let avatarStream = null;
-    if (firstUser) {
-      avatarStream = await getAvatar(firstUser.userFbId);
-    }
-
-    /* ================= VIP MESSAGE ================= */
-    if (isVIP) {
-      const msg = `┌───👑────💎───┐
-│  𝐕𝐈𝐏 𝐀𝐑𝐑𝐈𝐕𝐀𝐋  │
-└───🌟────✨───┘
-
-💝 স্বাগতম জানাচ্ছি বিশেষ অতিথিকে!
-
-👤 নাম : ${names.join(", ")}
-
-📊 আজকের যোগদান : ${data[threadID].count}
-
-❤️ ধন্যবাদ আমাদের সাথে থাকার জন্য!`;
-
-      if (avatarStream) {
-        return api.sendMessage({
-          body: msg,
-          mentions,
-          attachment: avatarStream
-        }, threadID);
+      if (selected) {
+        api.sendMessage({ body: messageBody, attachment: selected }, threadID);
       } else {
-        return api.sendMessage({
-          body: msg,
-          mentions
-        }, threadID);
+        api.sendMessage(messageBody, threadID);
       }
+    });
+
+    return;
+  }
+
+ 
+  try {
+    const { createReadStream, readdirSync } = global.nodemodule["fs-extra"];
+    let { threadName, participantIDs } = await api.getThreadInfo(threadID);
+    const threadData = global.data.threadData.get(parseInt(threadID)) || {};
+    let mentions = [], nameArray = [], memLength = [], i = 0;
+
+    for (let id in event.logMessageData.addedParticipants) {
+      const userName = event.logMessageData.addedParticipants[id].fullName;
+      nameArray.push(userName);
+      mentions.push({ tag: userName, id });
+      memLength.push(participantIDs.length - i++);
     }
+    memLength.sort((a, b) => a - b);
 
-    /* ================= BIG JOIN ================= */
-    if (count >= 5) {
-      const msg = `┌───🎉────🎊───┐
-│  𝐁𝐈𝐆 𝐆𝐑𝐎𝐔𝐏  │
-└───🎈────🎁───┘
+    let msg = (typeof threadData.customJoin === "undefined") ? `╭•┄┅═══❁🌺❁═══┅┄•╮
+     আ্ঁস্ঁসা্ঁলা্ঁমু্ঁ💚আ্ঁলা্ঁই্ঁকু্ঁম্ঁ
+╰•┄┅═══❁🌺❁═══┅┄•╯
+হাসি, মজা, ঠাট্টায় গড়ে উঠুক  
+চিরস্থায়ী বন্ধুত্বের বন্ধন।🥰
+ভালোবাসা ও সম্পর্ক থাকুক আজীবন।💝
 
-👥 ${count} জন সদস্য যোগদান করেছেন
-➕ যোগ করেছেন : ${adderName}
-📊 আজকের মোট : ${data[threadID].count}
+➤ আশা করি আপনি এখানে হাসি-মজা করে 
+আড্ডা দিতে ভালোবাসবেন।😍
+➤ সবার সাথে মিলেমিশে থাকবেন।😉
+➤ উস্কানিমূলক কথা বা খারাপ ব্যবহার করবেন না।🚫
+➤ গ্রুপ এডমিনের কথা শুনবেন ও রুলস মেনে চলবেন।✅
 
-💝 সবাইকে আন্তরিক স্বাগতম!`;
+›› প্রিয় {name},  
+আপনি এই গ্রুপের {soThanhVien} নম্বর মেম্বার!
 
-      if (avatarStream) {
-        return api.sendMessage({
-          body: msg,
-          mentions,
-          attachment: avatarStream
-        }, threadID);
-      } else {
-        return api.sendMessage({
-          body: msg,
-          mentions
-        }, threadID);
-      }
-    }
+›› গ্রুপ: {threadName}
 
-    /* ================= FRAME SYSTEM ================= */
+💌 🌺 𝐖 𝐄 𝐋 𝐂 𝐎 𝐌 𝐄 🌺 💌
+╭─╼╾─╼🌸╾─╼╾───╮
+   ─꯭─⃝‌‌মিঁলঁনেঁরঁ ফেঁমাঁসঁ বঁটঁ 🌺
+╰───╼╾─╼🌸╾─╼╾─╯
 
-    let msg = "";
-    let welcomeText = "";
-    let welcomeLine1 = "";
-    let welcomeLine2 = "";
-    let welcomeLine3 = "";
-    let welcomeLine4 = "";
+❖⋆══════════════════════════⋆❖` : threadData.customJoin;
 
-    // Random welcome messages in Bangla (3-4 lines)
-    const welcomeMessages = [
-      {
-        line1: "💝 হৃদয়ের উষ্ণ অভিনন্দন",
-        line2: "🌸 স্নেহের আবেশে স্বাগতম",
-        line3: "🎉 আনন্দের সাথে আগমন",
-        line4: "⭐ নতুন শুরুতে শুভেচ্ছা"
-      },
-      {
-        line1: "🌺 ভালোবাসায় ভরপুর স্বাগতম",
-        line2: "💫 উজ্জ্বল ভবিষ্যতের শুভেচ্ছা",
-        line3: "🌟 তারা ভরা স্বপ্নের আগমন",
-        line4: "🌈 রঙিন জীবনের সূচনা"
-      },
-      {
-        line1: "🌸 নতুন ফুলের আগমন",
-        line2: "💝 হৃদয়ে ভালোবাসা নিয়ে",
-        line3: "⭐ উজ্জ্বল আলোর প্রতীক",
-        line4: "🌺 সুন্দর ভবিষ্যতের শুভেচ্ছা"
-      },
-      {
-        line1: "🎊 স্বাগতম নতুন বন্ধু",
-        line2: "💝 ভালোবাসায় আবৃত",
-        line3: "🌟 উজ্জ্বল তারকার আগমন",
-        line4: "🌈 নতুন রঙের সমাহার"
-      }
-    ];
+    msg = msg
+      .replace(/\{name}/g, nameArray.join(', '))
+      .replace(/\{soThanhVien}/g, memLength.join(', '))
+      .replace(/\{threadName}/g, threadName);
 
-    const randomWelcome = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
-    welcomeLine1 = randomWelcome.line1;
-    welcomeLine2 = randomWelcome.line2;
-    welcomeLine3 = randomWelcome.line3;
-    welcomeLine4 = randomWelcome.line4;
+    const joinGifPath = path.join(__dirname, "cache", "joinGif");
+    const files = readdirSync(joinGifPath).filter(file =>
+      [".mp4", ".jpg", ".png", ".jpeg", ".gif", ".mp3"].some(ext => file.endsWith(ext))
+    );
+    const randomFile = files.length > 0 
+      ? createReadStream(path.join(joinGifPath, files[Math.floor(Math.random() * files.length)])) 
+      : null;
 
-    if (frame === 1) {
-      welcomeText = `🌸 স্বাগতম নতুন সদস্য 🌸`;
-      msg = `┌───🌸────🌷───┐
-│  ${welcomeText}  │
-└───🎀────🪄───┘
-
-👤 নাম : ${names.join(", ")}
-👥 যোগদান : ${count} জন
-➕ যোগ করেছেন : ${adderName}
-
-${welcomeLine1}
-${welcomeLine2}
-${welcomeLine3}
-${welcomeLine4}`;
-    }
-
-    if (frame === 2) {
-      welcomeText = `🌟 নতুন মুখের আগমন 🌟`;
-      msg = `┌───🌟────⭐───┐
-│  ${welcomeText}  │
-└───✨────💫───┘
-
-👤 ${names.join(", ")}
-👥 +${count} জন যোগদান
-➕ ${adderName}
-
-${welcomeLine1}
-${welcomeLine2}
-${welcomeLine3}
-${welcomeLine4}`;
-    }
-
-    if (frame === 3) {
-      welcomeText = `💫 নতুন যাত্রার শুরু 💫`;
-      msg = `┌───💫────🌠───┐
-│  ${welcomeText}  │
-└───🌟────⭐───┘
-
-👤 নাম : ${names.join(", ")}
-👥 যোগদান : ${count} জন
-➕ যোগ করেছেন : ${adderName}
-
-${welcomeLine1}
-${welcomeLine2}
-${welcomeLine3}
-${welcomeLine4}`;
-    }
-
-    if (frame === 4) {
-      welcomeText = `🌺 নতুন বন্ধুর আগমন 🌺`;
-      msg = `┌───🌺────🌸───┐
-│  ${welcomeText}  │
-└───🌷────🌹───┘
-
-👤 ${names.join(", ")}
-👥 +${count} জন যোগদান
-➕ ${adderName}
-
-${welcomeLine1}
-${welcomeLine2}
-${welcomeLine3}
-${welcomeLine4}`;
-    }
-
-    if (frame === 5) {
-      welcomeText = `✨ নতুন আশার আলো ✨`;
-      msg = `┌───✨────🌟───┐
-│  ${welcomeText}  │
-└───⭐────💫───┘
-
-👤 নাম : ${names.join(", ")}
-👥 যোগদান : ${count} জন
-➕ যোগ করেছেন : ${adderName}
-
-${welcomeLine1}
-${welcomeLine2}
-${welcomeLine3}
-${welcomeLine4}`;
-    }
-
-    if (frame === 6) {
-      welcomeText = `💎 নতুন সম্ভাবনার শুরু 💎`;
-      msg = `┌───💎────💠───┐
-│  ${welcomeText}  │
-└───🔮────💡───┘
-
-👤 ${names.join(", ")}
-👥 +${count} জন যোগদান
-➕ ${adderName}
-
-${welcomeLine1}
-${welcomeLine2}
-${welcomeLine3}
-${welcomeLine4}`;
-    }
-
-    if (frame === 7) {
-      welcomeText = `🎊 নতুন সদস্যকে অভিনন্দন 🎊`;
-      msg = `┌───🎊────🎉───┐
-│  ${welcomeText}  │
-└───🎁────🎈───┘
-
-👤 নাম : ${names.join(", ")}
-👥 যোগদান : ${count} জন
-➕ যোগ করেছেন : ${adderName}
-
-${welcomeLine1}
-${welcomeLine2}
-${welcomeLine3}
-${welcomeLine4}`;
-    }
-
-    if (frame === 8) {
-      welcomeText = `🌷 নতুন প্রাণের স্পন্দন 🌷`;
-      msg = `┌───🌷────🌹───┐
-│  ${welcomeText}  │
-└───🌸────🌺───┘
-
-👤 ${names.join(", ")}
-👥 +${count} জন যোগদান
-➕ ${adderName}
-
-${welcomeLine1}
-${welcomeLine2}
-${welcomeLine3}
-${welcomeLine4}`;
-    }
-
-    if (frame === 9) {
-      welcomeText = `⭐ নতুন স্বপ্নের শুরু ⭐`;
-      msg = `┌───⭐────🌟───┐
-│  ${welcomeText}  │
-└───✨────💫───┘
-
-👤 নাম : ${names.join(", ")}
-👥 যোগদান : ${count} জন
-➕ যোগ করেছেন : ${adderName}
-
-${welcomeLine1}
-${welcomeLine2}
-${welcomeLine3}
-${welcomeLine4}`;
-    }
-
-    if (frame === 10) {
-      welcomeText = `🌈 নতুন রঙের সমাহার 🌈`;
-      msg = `┌───🌈────🎨───┐
-│  ${welcomeText}  │
-└───💜────🧡───┘
-
-👤 ${names.join(", ")}
-👥 +${count} জন যোগদান
-➕ ${adderName}
-
-${welcomeLine1}
-${welcomeLine2}
-${welcomeLine3}
-${welcomeLine4}`;
-    }
-
-    if (avatarStream) {
-      return api.sendMessage({
-        body: msg,
-        mentions,
-        attachment: avatarStream
-      }, threadID);
-    } else {
-      return api.sendMessage({
-        body: msg,
-        mentions
-      }, threadID);
-    }
-
+    return api.sendMessage(
+      randomFile ? { body: msg, attachment: randomFile, mentions } : { body: msg, mentions },
+      threadID
+    );
   } catch (e) {
-    console.log("JoinNoti Error:", e);
+    console.error(e);
   }
 };

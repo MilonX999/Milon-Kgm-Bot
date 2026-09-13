@@ -3,7 +3,7 @@ const fs = require("fs-extra");
 const path = require("path");
 
 module.exports.config = {
-  name: "married1",
+  name: "married2",
   version: "1.0.0",
   hasPermssion: 0,
   credits: "SHAHADAT SAHU",
@@ -68,6 +68,6 @@ module.exports.run = async function ({ event, api }) {
     );
 
   } catch {
-    return api.sendMessage("API Error Call MR JUWEL", threadID, messageID);
+    return api.sendMessage("API Error Call Boss SAHU", threadID, messageID);
   }
 };
